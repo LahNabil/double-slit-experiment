@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fentes de Young · Simulation interactive</title>
+<meta name="description" content="Simulation interactive de l'expérience des deux fentes avec des électrons : le motif d'interférence apparaît, puis disparaît quand on observe par quelle fente passe chaque électron.">
+<meta name="author" content="Nabil Lahlalia">
+<meta name="theme-color" content="#070a12">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23070a12'/%3E%3Crect x='14' y='3' width='4' height='8' fill='%232a3450'/%3E%3Crect x='14' y='14' width='4' height='4' fill='%232a3450'/%3E%3Crect x='14' y='21' width='4' height='8' fill='%232a3450'/%3E%3Ccircle cx='7' cy='16' r='3' fill='%238fd0ff'/%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L'expérience des deux fentes, en simulation interactive">
+<meta property="og:description" content="Envoyez des électrons un par un, regardez les interférences apparaître… puis activez le détecteur.">
+<meta property="og:url" content="https://lahnabil.github.io/double-slit-experiment/">
+<meta property="og:image" content="https://lahnabil.github.io/double-slit-experiment/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link id="gfonts" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a lab bench. The recording stage (a fixed-ratio canvas) on the left, a narrow control rack on the right; stacks on phones. Single dark look by choice: it is a detector screen. */
+:root{
+  --ink:#070a12;        /* page ground, the darkened lab */
+  --panel:#0e1320;      /* control rack */
+  --line:#1f2840;       /* hairlines */
+  --text:#dfe6f5;       /* body text */
+  --muted:#8692ad;      /* secondary text */
+  --wave:#8fd0ff;       /* electrons, unobserved */
+  --watch:#ffb547;      /* detector, observed */
+  --display:"Fraunces", Georgia, "Times New Roman", serif;
+  --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme:dark;
+}
+html,body{background:var(--ink);color:var(--text)}
+body{font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 40px}
+.wrap{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:28px;align-items:start}
+header.top{max-width:1240px;margin:0 auto 20px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline}
+header.top h1{font-family:var(--display);font-weight:600;font-size:clamp(26px,3.4vw,38px);margin:0;letter-spacing:-.01em;text-wrap:balance}
+header.top p{margin:0;color:var(--muted);font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.stage-box{min-width:0;display:flex;justify-content:center}
+#stage{display:block;width:100%;max-width:min(100%, calc((100vh - 140px) * var(--ar)));height:auto;aspect-ratio:var(--ar-css);border:1px solid var(--line);border-radius:6px;background:var(--ink)}
+.rack{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:20px;min-width:0}
+.rack h2{font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+button,select,input[type=text]{font:inherit;color:var(--text)}
+button{background:transparent;border:1px solid var(--line);border-radius:6px;padding:9px 14px;cursor:pointer;font-weight:500;font-size:14px}
+button:hover{border-color:var(--muted)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--wave);outline-offset:2px}
+button.primary{background:var(--wave);color:var(--ink);border-color:var(--wave);width:100%;padding:13px 14px;font-size:15px}
+button.primary:hover{filter:brightness(1.08)}
+button[aria-pressed=true]{border-color:var(--watch);color:var(--watch)}
+.seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:0;border-radius:0;flex:1}
+.seg button[aria-pressed=true]{background:var(--line);color:var(--text)}
+label.lbl{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px}
+label.lbl output{font-family:var(--mono);color:var(--text);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--wave)}
+input[type=text]{width:100%;background:var(--ink);border:1px solid var(--line);border-radius:6px;padding:9px 10px}
+.hint{font-size:13px;color:var(--muted);margin:0}
+ol.steps{margin:0;padding-left:18px;font-size:13.5px;color:var(--text);display:flex;flex-direction:column;gap:6px}
+ol.steps b{font-weight:600}
+kbd{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 5px}
+@media (max-width:900px){.wrap{grid-template-columns:1fr}#stage{max-width:100%}}
+/* Recording mode: only the frame, centered on black */
+body.rec{padding:0;overflow:hidden;cursor:none}
+body.rec header.top, body.rec .rack{display:none}
+body.rec .wrap{display:block;max-width:none;height:100vh}
+body.rec .stage-box{height:100vh;align-items:center}
+body.rec #stage{border:0;border-radius:0;max-width:min(100vw, calc(100vh * var(--ar)))}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0}
+[hidden]{display:none!important}
+.rack a{color:var(--wave)}
+.src{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px;margin:0}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>Fentes de Young</h1>
+  <p>Simulation · électrons · prête à enregistrer</p>
+</header>
+
+<div class="wrap">
+  <div class="stage-box"><canvas id="stage" width="1080" height="1080" aria-label="Simulation de l'expérience des deux fentes"></canvas></div>
+
+  <aside class="rack">
+    <section>
+      <h2>Enregistrer une vidéo</h2>
+      <button class="primary" id="btnScenario">Lancer le scénario (36 s)</button>
+      <p class="hint" style="margin-top:8px">L'interface disparaît, seul le cadre reste. <kbd>Échap</kbd> pour arrêter.</p>
+    </section>
+
+    <section>
+      <h2>Format</h2>
+      <div class="seg" role="group" aria-label="Format">
+        <button id="f11" aria-pressed="true">Carré 1:1</button>
+        <button id="f45" aria-pressed="false">Portrait 4:5</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Mode libre</h2>
+      <div class="row">
+        <button id="btnRun">Pause</button>
+        <button id="btnReset">Effacer l'écran</button>
+        <button id="btnDet" aria-pressed="false">Détecteur : OFF</button>
+      </div>
+      <div style="margin-top:14px">
+        <label class="lbl" for="rate">Électrons par seconde <output id="rateOut">4</output></label>
+        <input type="range" id="rate" min="0" max="100" value="20">
+      </div>
+    </section>
+
+    <section>
+      <h2>Signature</h2>
+      <input type="text" id="sig" value="Simulation · Nabil Lahlalia" aria-label="Signature affichée à la fin">
+      <p class="hint" style="margin-top:6px">Affichée sur la dernière image.</p>
+    </section>
+
+    <section>
+      <h2>Pour enregistrer</h2>
+      <ol class="steps">
+        <li>Ouvre la page en plein écran (<kbd>F11</kbd>).</li>
+        <li>Lance l'enregistreur : <b>Win + Alt + R</b> sur Windows, <b>Cmd + Maj + 5</b> sur Mac, ou OBS.</li>
+        <li>Clique <b>Lancer le scénario</b>, attends la fin.</li>
+        <li>Recadre sur le carré et coupe le début.</li>
+      </ol>
+    </section>
+
+    <p class="src">Conçu par Nabil Lahlalia · <a href="https://github.com/LahNabil/double-slit-experiment" target="_blank" rel="noopener">code source sur GitHub</a></p>
+  </aside>
+</div>
+
+<script>
+(() => {
+// ---------- deterministic RNG ----------
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let rnd = mulberry32(20261025);
+
+// ---------- physics: screen probability densities ----------
+// u in [-1,1] = position on the screen. Unobserved: two-slit Fraunhofer pattern
+// I = cos²(π k u) · sinc²(π b u). Observed: the coherence is gone, each electron
+// went through one slit, so we get two separate single-slit humps (one per slit).
+const N = 2400;
+const sinc2 = x => x===0 ? 1 : (Math.sin(x)/x)**2;
+function buildCDF(f){const c=new Float64Array(N+1);for(let i=0;i<N;i++){const u=-1+2*(i+.5)/N;c[i+1]=c[i]+f(u)}const t=c[N];for(let i=0;i<=N;i++)c[i]/=t;return c}
+const cdfWave = buildCDF(u => Math.cos(Math.PI*4.6*u)**2 * sinc2(Math.PI*1.25*u));
+const hump = (u,c) => Math.exp(-((u-c)**2)/(2*0.105**2)) + 0.06*sinc2(Math.PI*3.2*(u-c));
+const cdfWatch = buildCDF(u => hump(u,-0.27)+hump(u,0.27));
+function sample(cdf){const r=rnd();let lo=0,hi=N;while(hi-lo>1){const m=(lo+hi)>>1;if(cdf[m]<=r)lo=m;else hi=m}const f=(r-cdf[lo])/((cdf[hi]-cdf[lo])||1);return -1+2*(lo+f)/N}
+
+// ---------- canvas + layout ----------
+const cv = document.getElementById('stage');
+const ctx = cv.getContext('2d');
+let W=1080,H=1080,L={};
+const hitsCv = document.createElement('canvas'), hctx = hitsCv.getContext('2d');
+let compareCv = null;
+const C = {ink:'#070a12', line:'#1f2840', text:'#dfe6f5', muted:'#8692ad', wave:'#8fd0ff', watch:'#ffb547'};
+const FD='"Fraunces", Georgia, serif', FM='"IBM Plex Mono", ui-monospace, Menlo, monospace';
+
+function sprite(color, r){const c=document.createElement('canvas');c.width=c.height=r*2;const g=c.getContext('2d');const gr=g.createRadialGradient(r,r,0,r,r,r);gr.addColorStop(0,'rgba(255,255,255,0.95)');gr.addColorStop(0.18,color);gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(0,0,r*2,r*2);return c}
+const spr = {wave:sprite('rgba(143,208,255,0.55)',7), watch:sprite('rgba(255,181,71,0.55)',7),
+             waveBig:sprite('rgba(143,208,255,0.6)',22), watchBig:sprite('rgba(255,181,71,0.6)',22)};
+
+function layout(fmt){
+  W=1080; H = fmt==='45' ? 1350 : 1080;
+  cv.width=W; cv.height=H; hitsCv.width=W; hitsCv.height=H;
+  const pad=72;
+  const y0 = fmt==='45' ? 420 : 300, y1 = H - (fmt==='45' ? 170 : 128);
+  L = {pad, y0, y1, cy:(y0+y1)/2, half:(y1-y0)/2,
+       gunX:120, barX:430, stripX0:760, stripX1:868, histX0:884, histX1:W-pad,
+       slitDy: fmt==='45'?72:62, slitGap:26, capY: fmt==='45'?150:128};
+  document.documentElement.style.setProperty('--ar', W/H);
+  document.documentElement.style.setProperty('--ar-css', W+' / '+H);
+  bins = new Float64Array(BINS);
+}
+const uToY = u => L.cy + u*L.half*0.94;
+
+// ---------- simulation state ----------
+const BINS = 96;
+let bins = new Float64Array(BINS), shownMax = 1;
+let particles=[], ripples=[], impacts=[];
+let detector=false, detAnim=0, rate=4, acc=0, count=0, simT=0, lastRipple=-1, hitsAlpha=1, gunPulse=0;
+let storeWave=[], storeWatch=[];
+const T1=0.38, T2=0.36;
+
+function resetScreen(){hctx.clearRect(0,0,W,H);bins=new Float64Array(BINS);shownMax=1;particles=[];ripples=[];impacts=[];count=0;acc=0;hitsAlpha=1}
+
+function emit(){
+  const watch = detector;
+  const u = sample(watch ? cdfWatch : cdfWave);
+  const slit = watch ? (u<0?-1:1) : 0;
+  particles.push({t0:simT,u,slit,xj:rnd(),watch,crossed:false});
+  gunPulse=1;
+}
+function land(p){
+  const x = L.stripX0+6 + p.xj*(L.stripX1-L.stripX0-12), y = uToY(p.u);
+  hctx.globalCompositeOperation='lighter';
+  hctx.drawImage(p.watch?spr.watch:spr.wave, x-7, y-7);
+  const b = Math.min(BINS-1, Math.max(0, Math.floor((p.u+1)/2*BINS)));
+  bins[b]++; count++;
+  (p.watch?storeWatch:storeWave).push([p.u,p.xj]);
+  if(rate<60) impacts.push({x,y,t0:simT,watch:p.watch});
+}
+function step(dt){
+  simT += dt;
+  acc += rate*dt;
+  while(acc>=1){acc-=1;emit()}
+  detAnim += ((detector?1:0)-detAnim)*Math.min(1,dt*6);
+  gunPulse = Math.max(0,gunPulse-dt*6);
+  for(const p of particles){
+    const a = simT-p.t0;
+    if(!p.crossed && a>=T1){p.crossed=true;
+      if(!p.watch && (rate<=45 || simT-lastRipple>0.32)){ripples.push({t0:simT});lastRipple=simT}
+      if(p.watch && rate<=45) impacts.push({x:L.barX+22,y:L.cy+p.slit*L.slitDy,t0:simT,watch:true,sensor:true});
+    }
+    if(a>=T1+T2){land(p);p.dead=true}
+  }
+  particles = particles.filter(p=>!p.dead);
+  ripples = ripples.filter(r=>simT-r.t0<T2*1.25);
+  impacts = impacts.filter(i=>simT-i.t0<0.5);
+  let m=0;for(let i=0;i<BINS;i++)m=Math.max(m,bins[i]);
+  shownMax += (Math.max(m,1)-shownMax)*Math.min(1,dt*5);
+}
+
+// ---------- drawing ----------
+function rgba(hex,a){const n=parseInt(hex.slice(1),16);return `rgba(${n>>16},${n>>8&255},${n&255},${a})`}
+function monoLabel(t,x,y,col,align='left',size=17){ctx.font=`500 ${size}px ${FM}`;ctx.fillStyle=col;ctx.textAlign=align;ctx.textBaseline='alphabetic';
+  if('letterSpacing' in ctx) ctx.letterSpacing='2px'; ctx.fillText(t,x,y); if('letterSpacing' in ctx) ctx.letterSpacing='0px'}
+
+function drawApparatus(){
+  const {y0,y1,cy,gunX,barX,stripX0,stripX1,histX0,histX1,slitDy,slitGap}=L;
+  // beam axis
+  ctx.strokeStyle=rgba(C.muted,0.18);ctx.lineWidth=1;ctx.setLineDash([4,8]);
+  ctx.beginPath();ctx.moveTo(gunX+40,cy);ctx.lineTo(barX,cy);ctx.stroke();ctx.setLineDash([]);
+  // source
+  ctx.fillStyle='#121a2c';ctx.strokeStyle=C.line;ctx.lineWidth=2;
+  roundRect(gunX-58,cy-34,98,68,10);ctx.fill();ctx.stroke();
+  const g=ctx.createRadialGradient(gunX+40,cy,0,gunX+40,cy,26+gunPulse*14);
+  g.addColorStop(0,rgba(detector?C.watch:C.wave,0.45+gunPulse*0.5));g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(gunX+40,cy,40,0,7);ctx.fill();
+  ctx.fillStyle=C.text;ctx.beginPath();ctx.arc(gunX+40,cy,4,0,7);ctx.fill();
+  monoLabel('SOURCE',gunX-9,cy+66,C.muted,'center',15);
+  // barrier with two slits
+  ctx.fillStyle='#2a3450';
+  const bw=14, s1=cy-slitDy, s2=cy+slitDy, h=slitGap/2;
+  ctx.fillRect(barX-bw/2,y0,bw,s1-h-y0);
+  ctx.fillRect(barX-bw/2,s1+h,bw,s2-h-(s1+h));
+  ctx.fillRect(barX-bw/2,s2+h,bw,y1-(s2+h));
+  monoLabel('2 FENTES',barX,y1+38,C.muted,'center',15);
+  // detectors
+  if(detAnim>0.01){
+    const pulse = 0.75+0.25*Math.sin(simT*6);
+    for(const s of [s1,s2]){
+      ctx.globalAlpha=detAnim;
+      ctx.fillStyle='#1b1408';ctx.strokeStyle=rgba(C.watch,0.9);ctx.lineWidth=2;
+      roundRect(barX+14,s-18,30,36,6);ctx.fill();ctx.stroke();
+      const gg=ctx.createRadialGradient(barX+29,s,0,barX+29,s,30);
+      gg.addColorStop(0,rgba(C.watch,0.55*pulse));gg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=gg;ctx.beginPath();ctx.arc(barX+29,s,30,0,7);ctx.fill();
+      ctx.fillStyle=C.watch;ctx.beginPath();ctx.arc(barX+29,s,4.5,0,7);ctx.fill();
+      ctx.globalAlpha=1;
+    }
+    ctx.globalAlpha=detAnim;monoLabel('DÉTECTEUR',barX+29,y0-18,C.watch,'center',15);ctx.globalAlpha=1;
+  }
+  // screen
+  ctx.fillStyle='#0b101c';ctx.fillRect(stripX0,y0,stripX1-stripX0,y1-y0);
+  ctx.strokeStyle=C.line;ctx.lineWidth=2;ctx.strokeRect(stripX0,y0,stripX1-stripX0,y1-y0);
+  ctx.globalAlpha=hitsAlpha;ctx.drawImage(hitsCv,0,0);ctx.globalAlpha=1;
+  monoLabel('ÉCRAN',(stripX0+stripX1)/2,y1+38,C.muted,'center',15);
+  // histogram
+  ctx.strokeStyle=rgba(C.muted,0.25);ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(histX0,y0);ctx.lineTo(histX0,y1);ctx.stroke();
+  const bh=(y1-y0)*0.94/BINS, top=L.cy-L.half*0.94, wmax=histX1-histX0-4;
+  ctx.globalAlpha=hitsAlpha;
+  ctx.fillStyle=rgba(detector?C.watch:C.wave,0.8);
+  for(let i=0;i<BINS;i++){const w=Math.min(wmax,bins[i]/shownMax*wmax);if(w>0.5)ctx.fillRect(histX0+2,top+i*bh+0.6,w,bh-1.2)}
+  ctx.globalAlpha=1;
+  monoLabel('IMPACTS',(histX0+histX1)/2,y1+38,C.muted,'center',15);
+}
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+
+function drawFlight(){
+  const {gunX,barX,cy,slitDy,stripX0,stripX1}=L;
+  // wave ripples from both slits
+  ctx.save();ctx.beginPath();ctx.rect(barX+8,L.y0,stripX0-barX-8,L.y1-L.y0);ctx.clip();
+  for(const r of ripples){
+    const a=(simT-r.t0)/T2, R=a*(stripX0-barX)*1.02;
+    for(const s of [cy-slitDy,cy+slitDy]){
+      for(let k=0;k<4;k++){const rr=R-k*22;if(rr<=2)continue;
+        ctx.strokeStyle=rgba(C.wave,Math.max(0,(1-a))*0.42*(1-k*0.22));ctx.lineWidth=2;
+        ctx.beginPath();ctx.arc(barX,s,rr,-1.25,1.25);ctx.stroke()}
+    }
+  }
+  ctx.restore();
+  ctx.globalCompositeOperation='lighter';
+  for(const p of particles){
+    const a=simT-p.t0;
+    let x,y;
+    if(a<T1){const f=a/T1;x=gunX+40+(barX-gunX-40)*f;y=cy+(p.watch?p.slit*slitDy*f:0)}
+    else{ if(!p.watch) continue;
+      const f=(a-T1)/T2, sy=cy+p.slit*slitDy, tx=stripX0+6+p.xj*(stripX1-stripX0-12), ty=uToY(p.u);
+      x=barX+(tx-barX)*f;y=sy+(ty-sy)*f}
+    const big = rate<60;
+    const s = big ? (p.watch?spr.watchBig:spr.waveBig) : (p.watch?spr.watch:spr.wave);
+    const r = s.width/2; ctx.drawImage(s,x-r,y-r);
+  }
+  for(const i of impacts){const a=(simT-i.t0)/0.5;const r=6+a*(i.sensor?34:26);
+    ctx.strokeStyle=rgba(i.watch?C.watch:C.wave,(1-a)*0.8);ctx.lineWidth=2;ctx.beginPath();ctx.arc(i.x,i.y,r,0,7);ctx.stroke()}
+  ctx.globalCompositeOperation='source-over';
+}
+
+function wrapLines(text,maxW){const words=text.split(' ');const lines=[];let cur='';
+  for(const w of words){const t=cur?cur+' '+w:w;if(ctx.measureText(t).width>maxW&&cur){lines.push(cur);cur=w}else cur=t}
+  if(cur)lines.push(cur);return lines}
+function drawCaption(text,alpha,emph){
+  if(!text||alpha<=0)return;
+  const fs = H>1100?60:56;
+  ctx.globalAlpha=alpha;ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  ctx.font=`600 ${fs}px ${FD}`;
+  const lines=wrapLines(text,W-L.pad*2);
+  let y=L.capY+fs*0.9;
+  for(const ln of lines){ctx.fillStyle=emph?C.watch:C.text;ctx.fillText(ln,L.pad,y);y+=fs*1.12}
+  ctx.globalAlpha=1;
+}
+function drawHeader(){
+  monoLabel('EXPÉRIENCE DES DEUX FENTES',L.pad,L.capY-34,C.muted,'left',17);
+}
+function drawFooter(sigAlpha){
+  const y=H-58;
+  const on=detector, col=on?C.watch:C.wave;
+  ctx.font=`500 18px ${FM}`;
+  const label = 'OBSERVATEUR : '+(on?'ON':'OFF');
+  if('letterSpacing' in ctx) ctx.letterSpacing='2px';
+  const tw=ctx.measureText(label).width; if('letterSpacing' in ctx) ctx.letterSpacing='0px';
+  ctx.strokeStyle=rgba(col,0.7);ctx.lineWidth=2;roundRect(L.pad,y-30,tw+58,44,22);ctx.stroke();
+  ctx.fillStyle=col;ctx.beginPath();ctx.arc(L.pad+24,y-8,6,0,7);ctx.fill();
+  monoLabel(label,L.pad+40,y-1,col,'left',18);
+  ctx.font=`500 18px ${FM}`;
+  monoLabel(count.toLocaleString('fr-FR')+' ÉLECTRONS',W-L.pad,y-1,C.muted,'right',18);
+}
+
+function buildCompare(){
+  compareCv=document.createElement('canvas');compareCv.width=W;compareCv.height=H;
+  const g=compareCv.getContext('2d');
+  const gap=60, pw=(W-L.pad*2-gap)/2;
+  const panels=[{data:storeWave,col:C.wave,s:spr.wave,label:'SANS OBSERVATION',x:L.pad},
+                {data:storeWatch,col:C.watch,s:spr.watch,label:'AVEC OBSERVATION',x:L.pad+pw+gap}];
+  for(const p of panels){
+    const sx0=p.x, sw=pw*0.52, hx0=sx0+sw+14, hx1=p.x+pw;
+    g.fillStyle='#0b101c';g.fillRect(sx0,L.y0,sw,L.y1-L.y0);
+    g.strokeStyle=C.line;g.lineWidth=2;g.strokeRect(sx0,L.y0,sw,L.y1-L.y0);
+    g.globalCompositeOperation='lighter';
+    for(const [u,xj] of p.data){g.drawImage(p.s,sx0+6+xj*(sw-12)-7,uToY(u)-7)}
+    g.globalCompositeOperation='source-over';
+    const b=new Float64Array(BINS);for(const [u] of p.data)b[Math.min(BINS-1,Math.max(0,Math.floor((u+1)/2*BINS)))]++;
+    let m=1;for(const v of b)m=Math.max(m,v);
+    const bh=(L.y1-L.y0)*0.94/BINS, top=L.cy-L.half*0.94, wmax=hx1-hx0-2;
+    g.fillStyle=rgba(p.col,0.85);
+    for(let i=0;i<BINS;i++){const w=b[i]/m*wmax;if(w>0.5)g.fillRect(hx0,top+i*bh+0.6,w,bh-1.2)}
+    g.font=`500 17px ${FM}`;g.fillStyle=p.col;g.textAlign='left';
+    if('letterSpacing' in g) g.letterSpacing='2px';
+    g.fillText(p.label,sx0,L.y0-20);
+    if('letterSpacing' in g) g.letterSpacing='0px';
+  }
+}
+
+// ---------- scenario (seconds) ----------
+const SCRIPT_LEN = 36;
+const CAPS = [
+  [0.0, 4.2, "On envoie des électrons, un par un, vers deux fentes."],
+  [4.2, 7.6, "Chacun frappe l'écran en un seul point. Comme une bille."],
+  [7.6, 13.0, "Mais des milliers d'impacts dessinent des bandes."],
+  [13.0, 17.4, "Des interférences. Chaque électron passe par les deux fentes à la fois."],
+  [17.4, 21.2, "Maintenant, on place un détecteur pour savoir par où il passe.", true],
+  [21.2, 29.0, "On l'observe… et les bandes disparaissent.", true],
+  [29.6, 36.5, "Le simple fait de regarder change le résultat."],
+];
+const ramp=(t,a,b,ra,rb)=>{const f=Math.min(1,Math.max(0,(t-a)/(b-a)));return ra*Math.pow(rb/ra,f)};
+let scen=null; // {t, phase flags}
+function scenarioRate(t){
+  if(t<4.2) return 2.2;
+  if(t<7.6) return ramp(t,4.2,7.6,2.2,30);
+  if(t<15.5) return ramp(t,7.6,13.5,30,650);
+  if(t<16.6) return 650;
+  if(t<18.4) return 0;
+  if(t<21.2) return 2.2;
+  if(t<28.4) return ramp(t,21.2,26.5,2.2,700);
+  return 0;
+}
+function startScenario(){
+  rnd=mulberry32(20261025);
+  detector=false;detAnim=0;resetScreen();storeWave=[];storeWatch=[];compareCv=null;simT=0;lastRipple=-1;
+  scen={t:0,switched:false,compared:false};
+}
+function scenarioStep(dt){
+  const t=scen.t+=dt;
+  rate=scenarioRate(t);
+  if(t>=16.6 && t<18.4){hitsAlpha=Math.max(0,1-(t-16.6)/1.2)}
+  if(t>=18.4 && !scen.switched){scen.switched=true;const keepWave=storeWave;resetScreen();storeWave=keepWave;storeWatch=[];detector=true}
+  if(t>=17.6 && t<18.4) detector=true; // detector slides in while caption explains
+  if(t>=29 && !scen.compared){scen.compared=true;buildCompare()}
+  step(dt);
+  if(t>=SCRIPT_LEN) return false;
+  return true;
+}
+function capAt(t){for(const [a,b,txt,em] of CAPS){if(t>=a&&t<b){const al=Math.min(a===0?1:(t-a)/0.35,1,(b-t)/0.35);return [txt,Math.max(0,al),em]}}return [null,0]}
+
+function render(){
+  ctx.globalCompositeOperation='source-over';
+  ctx.fillStyle=C.ink;ctx.fillRect(0,0,W,H);
+  const vg=ctx.createRadialGradient(W*0.55,L.cy,0,W*0.55,L.cy,W*0.8);
+  vg.addColorStop(0,'rgba(30,48,90,0.22)');vg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+  drawHeader();
+  let cmp=0;
+  if(scen){cmp=Math.min(1,Math.max(0,(scen.t-29)/0.9))}
+  if(cmp<1){ctx.globalAlpha=1-cmp;drawApparatus();drawFlight();drawFooter();ctx.globalAlpha=1}
+  if(cmp>0&&compareCv){ctx.globalAlpha=cmp;ctx.drawImage(compareCv,0,0);
+    const sig=document.getElementById('sig').value.trim();
+    const sa=Math.min(1,Math.max(0,(scen.t-31)/0.8));
+    if(sig){ctx.globalAlpha=sa;ctx.font=`italic 400 26px ${FD}`;ctx.fillStyle=C.muted;ctx.textAlign='left';ctx.fillText(sig,L.pad,H-52)}
+    ctx.globalAlpha=1}
+  if(scen){const [txt,al,em]=capAt(scen.t);drawCaption(txt,al,em)}
+  else drawCaption("Un électron. Deux fentes.",1,false);
+}
+
+// ---------- loop & UI ----------
+let running=true, last=0, raf=0;
+function frame(ts){
+  const dt=Math.min(0.05,(ts-(last||ts))/1000);last=ts;
+  if(scen){ if(!scenarioStep(dt)) stopScenario(true) }
+  else if(running) step(dt);
+  render();
+  raf=requestAnimationFrame(frame);
+}
+function stopScenario(finished){
+  if(!scen)return;
+  if(!finished){document.body.classList.remove('rec');if(document.fullscreenElement) document.exitFullscreen().catch(()=>{})}
+  if(!finished){scen=null;detector=false;resetScreen();syncUI()}
+  else{ holdFinal=true; } // keep the last frame on screen until Échap
+}
+let holdFinal=false;
+const _scenarioStep=scenarioStep;
+scenarioStep=function(dt){ if(holdFinal) return true; return _scenarioStep(dt) };
+
+const $=id=>document.getElementById(id);
+function rateFromSlider(v){return Math.round(Math.pow(10,v/100*3))} // 1..1000
+function syncUI(){
+  $('btnDet').setAttribute('aria-pressed',detector);$('btnDet').textContent='Détecteur : '+(detector?'ON':'OFF');
+  $('btnRun').textContent=running?'Pause':'Reprendre';
+}
+function leaveScenario(){ if(scen){scen=null;holdFinal=false;detector=false;resetScreen();rate=rateFromSlider(+$('rate').value);syncUI()} }
+$('rate').addEventListener('input',e=>{leaveScenario();rate=rateFromSlider(+e.target.value);$('rateOut').textContent=rate});
+$('btnRun').onclick=()=>{leaveScenario();running=!running;syncUI()};
+$('btnReset').onclick=()=>{leaveScenario();resetScreen()};
+$('btnDet').onclick=()=>{leaveScenario();detector=!detector;resetScreen();syncUI()};
+function setFmt(f){leaveScenario();$('f11').setAttribute('aria-pressed',f==='11');$('f45').setAttribute('aria-pressed',f==='45');layout(f);resetScreen()}
+$('f11').onclick=()=>setFmt('11');$('f45').onclick=()=>setFmt('45');
+$('btnScenario').onclick=()=>{
+  holdFinal=false;
+  document.body.classList.add('rec');
+  const el=document.documentElement;
+  if(el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+  startScenario();
+};
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&(scen||document.body.classList.contains('rec'))){document.body.classList.remove('rec');holdFinal=false;leaveScenario()}
+});
+document.addEventListener('fullscreenchange',()=>{});
+
+// ---------- offline render hook (used to export the MP4) ----------
+window.__render={
+  setup(fmt){layout(fmt);startScenario();holdFinal=false;running=false},
+  advance(dt,steps){for(let i=0;i<steps;i++)_scenarioStep(dt);render()},
+  length:SCRIPT_LEN
+};
+
+layout('11');
+rate=rateFromSlider(+$('rate').value);$('rateOut').textContent=rate;
+const go=()=>{if(!window.__noLoop) raf=requestAnimationFrame(frame)};
+Promise.all([document.fonts.load(`600 56px ${FD}`),document.fonts.load(`italic 400 26px ${FD}`),document.fonts.load(`500 17px ${FM}`)]).then(go,go);
+})();
+</script>
+</body>
+</html>
