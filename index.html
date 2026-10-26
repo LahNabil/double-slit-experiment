@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Fentes de Young · Simulation interactive</title>
+<link rel="alternate" hreflang="fr" href="https://lahnabil.github.io/double-slit-experiment/?lang=fr">
+<link rel="alternate" hreflang="en" href="https://lahnabil.github.io/double-slit-experiment/?lang=en">
+<link rel="alternate" hreflang="ar" href="https://lahnabil.github.io/double-slit-experiment/?lang=ar">
 <meta name="description" content="Simulation interactive de l'expérience des deux fentes avec des électrons : le motif d'interférence apparaît, puis disparaît quand on observe par quelle fente passe chaque électron.">
 <meta name="author" content="Nabil Lahlalia">
 <meta name="theme-color" content="#070a12">
@@ -18,7 +21,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link id="gfonts" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link id="gfonts" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
 <style>
 /* Layout: a lab bench. The recording stage (a fixed-ratio canvas) on the left, a narrow control rack on the right; stacks on phones. Single dark look by choice: it is a detector screen. */
 :root{
@@ -32,13 +35,19 @@
   --display:"Fraunces", Georgia, "Times New Roman", serif;
   --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --arabic:"IBM Plex Sans Arabic", "Noto Sans Arabic", Tahoma, sans-serif;
   color-scheme:dark;
 }
 html,body{background:var(--ink);color:var(--text)}
 body{font-family:var(--body);font-size:15px;line-height:1.5;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 40px}
 .wrap{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:28px;align-items:start}
-header.top{max-width:1240px;margin:0 auto 20px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline}
+header.top{max-width:1240px;margin:0 auto 20px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+header.top .titles{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;flex:1 1 auto;min-width:0}
+.lang{flex:none;display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.lang button{border:0;border-radius:0;padding:7px 12px;font-size:13px;font-family:var(--mono);color:var(--muted)}
+.lang button[aria-pressed=true]{background:var(--line);color:var(--text)}
+.lang button[lang=ar]{font-family:var(--arabic);font-size:15px;line-height:1}
 header.top h1{font-family:var(--display);font-weight:600;font-size:clamp(26px,3.4vw,38px);margin:0;letter-spacing:-.01em;text-wrap:balance}
 header.top p{margin:0;color:var(--muted);font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
 .stage-box{min-width:0;display:flex;justify-content:center}
@@ -61,7 +70,7 @@ label.lbl output{font-family:var(--mono);color:var(--text);font-variant-numeric:
 input[type=range]{width:100%;accent-color:var(--wave)}
 input[type=text]{width:100%;background:var(--ink);border:1px solid var(--line);border-radius:6px;padding:9px 10px}
 .hint{font-size:13px;color:var(--muted);margin:0}
-ol.steps{margin:0;padding-left:18px;font-size:13.5px;color:var(--text);display:flex;flex-direction:column;gap:6px}
+ol.steps{margin:0;padding-inline-start:18px;font-size:13.5px;color:var(--text);display:flex;flex-direction:column;gap:6px}
 ol.steps b{font-weight:600}
 kbd{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 5px}
 @media (max-width:900px){.wrap{grid-template-columns:1fr}#stage{max-width:100%}}
@@ -77,55 +86,67 @@ body{margin:0}
 [hidden]{display:none!important}
 .rack a{color:var(--wave)}
 .src{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px;margin:0}
+/* Arabic: its own face, no letter-spacing or uppercase (they break the script) */
+:lang(ar) body, html[lang=ar] body{font-family:var(--arabic)}
+html[lang=ar] header.top h1{font-family:var(--arabic);letter-spacing:0}
+html[lang=ar] header.top p, html[lang=ar] .rack h2{font-family:var(--arabic);letter-spacing:0;text-transform:none;font-size:13px}
+html[lang=ar] .rack h2{font-weight:600}
 </style>
 </head>
 <body>
 
 <header class="top">
-  <h1>Fentes de Young</h1>
-  <p>Simulation · électrons · prête à enregistrer</p>
+  <div class="titles">
+    <h1 data-i18n="title">Fentes de Young</h1>
+    <p data-i18n="subtitle">Simulation · électrons · prête à enregistrer</p>
+  </div>
+  <div class="lang" role="group" aria-label="Langue / Language / اللغة">
+    <button data-lang="fr" lang="fr" aria-pressed="true">FR</button>
+    <button data-lang="en" lang="en" aria-pressed="false">EN</button>
+    <button data-lang="ar" lang="ar" aria-pressed="false">ع</button>
+  </div>
 </header>
 
 <div class="wrap">
-  <div class="stage-box"><canvas id="stage" width="1080" height="1080" aria-label="Simulation de l'expérience des deux fentes"></canvas></div>
+  <div class="stage-box"><canvas id="stage" width="1080" height="1080" data-i18n-aria="canvasAria" aria-label="Simulation de l'expérience des deux fentes"></canvas></div>
 
   <aside class="rack">
     <section>
-      <h2>Enregistrer une vidéo</h2>
-      <button class="primary" id="btnScenario">Lancer le scénario (36 s)</button>
-      <p class="hint" style="margin-top:8px">L'interface disparaît, seul le cadre reste. <kbd>Échap</kbd> pour arrêter.</p>
+      <h2 data-i18n="recH">Enregistrer une vidéo</h2>
+      <button class="primary" id="btnScenario" data-i18n="play">Lancer le scénario (36 s)</button>
+      <p class="hint" style="margin-top:8px" data-i18n-html="recHint">L'interface disparaît, seul le cadre reste. <kbd>Échap</kbd> pour arrêter.</p>
     </section>
 
     <section>
-      <h2>Format</h2>
-      <div class="seg" role="group" aria-label="Format">
-        <button id="f11" aria-pressed="true">Carré 1:1</button>
-        <button id="f45" aria-pressed="false">Portrait 4:5</button>
+      <h2 data-i18n="fmtH">Format</h2>
+      <div class="seg" role="group" data-i18n-aria="fmtH" aria-label="Format">
+        <button id="f11" aria-pressed="true" data-i18n="f11">Carré 1:1</button>
+        <button id="f45" aria-pressed="false" data-i18n="f45">Portrait 4:5</button>
       </div>
     </section>
 
     <section>
-      <h2>Mode libre</h2>
+      <h2 data-i18n="freeH">Mode libre</h2>
       <div class="row">
         <button id="btnRun">Pause</button>
-        <button id="btnReset">Effacer l'écran</button>
+        <button id="btnReset" data-i18n="reset">Effacer l'écran</button>
         <button id="btnDet" aria-pressed="false">Détecteur : OFF</button>
       </div>
       <div style="margin-top:14px">
-        <label class="lbl" for="rate">Électrons par seconde <output id="rateOut">4</output></label>
+        <label class="lbl" for="rate"><span data-i18n="rate">Électrons par seconde</span> <output id="rateOut">4</output></label>
         <input type="range" id="rate" min="0" max="100" value="20">
       </div>
     </section>
 
     <section>
-      <h2>Signature</h2>
-      <input type="text" id="sig" value="Simulation · Nabil Lahlalia" aria-label="Signature affichée à la fin">
-      <p class="hint" style="margin-top:6px">Affichée sur la dernière image.</p>
+      <h2 data-i18n="sigH">Signature</h2>
+      <input type="text" id="sig" value="Simulation · Nabil Lahlalia" data-i18n-aria="sigAria" aria-label="Signature affichée à la fin">
+      <p class="hint" style="margin-top:6px" data-i18n="sigHint">Affichée sur la dernière image.</p>
     </section>
 
     <section>
-      <h2>Pour enregistrer</h2>
-      <ol class="steps">
+      <h2 data-i18n="howH">Pour enregistrer</h2>
+      <ol class="steps" data-i18n-html="steps">
         <li>Ouvre la page en plein écran (<kbd>F11</kbd>).</li>
         <li>Lance l'enregistreur : <b>Win + Alt + R</b> sur Windows, <b>Cmd + Maj + 5</b> sur Mac, ou OBS.</li>
         <li>Clique <b>Lancer le scénario</b>, attends la fin.</li>
@@ -133,7 +154,7 @@ body{margin:0}
       </ol>
     </section>
 
-    <p class="src">Conçu par Nabil Lahlalia · <a href="https://github.com/LahNabil/double-slit-experiment" target="_blank" rel="noopener">code source sur GitHub</a></p>
+    <p class="src" data-i18n-html="credit">Conçu par Nabil Lahlalia · <a href="https://github.com/LahNabil/double-slit-experiment" target="_blank" rel="noopener">code source sur GitHub</a></p>
   </aside>
 </div>
 
@@ -155,6 +176,56 @@ const hump = (u,c) => Math.exp(-((u-c)**2)/(2*0.105**2)) + 0.06*sinc2(Math.PI*3.
 const cdfWatch = buildCDF(u => hump(u,-0.27)+hump(u,0.27));
 function sample(cdf){const r=rnd();let lo=0,hi=N;while(hi-lo>1){const m=(lo+hi)>>1;if(cdf[m]<=r)lo=m;else hi=m}const f=(r-cdf[lo])/((cdf[hi]-cdf[lo])||1);return -1+2*(lo+f)/N}
 
+
+// ---------- languages ----------
+const GH='<a href="https://github.com/LahNabil/double-slit-experiment" target="_blank" rel="noopener">';
+const I18N={
+  fr:{dir:'ltr',locale:'fr-FR',docTitle:"Fentes de Young · Simulation interactive",
+    title:"Fentes de Young",subtitle:"Simulation · électrons · prête à enregistrer",
+    canvasAria:"Simulation de l'expérience des deux fentes",
+    recH:"Enregistrer une vidéo",play:"Lancer le scénario (36 s)",
+    recHint:"L'interface disparaît, seul le cadre reste. <kbd>Échap</kbd> pour arrêter.",
+    fmtH:"Format",f11:"Carré 1:1",f45:"Portrait 4:5",freeH:"Mode libre",
+    pause:"Pause",resume:"Reprendre",reset:"Effacer l'écran",det:"Détecteur",on:"ON",off:"OFF",
+    rate:"Électrons par seconde",sigH:"Signature",sigAria:"Signature affichée à la fin",sigHint:"Affichée sur la dernière image.",
+    sig:"Simulation · Nabil Lahlalia",howH:"Pour enregistrer",
+    steps:"<li>Ouvre la page en plein écran (<kbd>F11</kbd>).</li><li>Lance l'enregistreur : <b>Win + Alt + R</b> sur Windows, <b>Cmd + Maj + 5</b> sur Mac, ou OBS.</li><li>Clique <b>Lancer le scénario</b>, attends la fin.</li><li>Recadre sur le carré et coupe le début.</li>",
+    credit:"Conçu par Nabil Lahlalia · "+GH+"code source sur GitHub</a>",
+    cv:{head:"EXPÉRIENCE DES DEUX FENTES",source:"SOURCE",slits:"2 FENTES",detector:"DÉTECTEUR",screen:"ÉCRAN",hits:"IMPACTS",
+      observer:"OBSERVATEUR : ",on:"ON",off:"OFF",count:n=>n+" ÉLECTRONS",notObs:"SANS OBSERVATION",obs:"AVEC OBSERVATION",idle:"Un électron. Deux fentes.",
+      caps:["On envoie des électrons, un par un, vers deux fentes.","Chacun frappe l'écran en un seul point. Comme une bille.","Mais des milliers d'impacts dessinent des bandes.","Des interférences. Chaque électron passe par les deux fentes à la fois.","Maintenant, on place un détecteur pour savoir par où il passe.","On l'observe… et les bandes disparaissent.","Le simple fait de regarder change le résultat."]}},
+  en:{dir:'ltr',locale:'en-US',docTitle:"Double-Slit Experiment · Interactive simulation",
+    title:"The Double-Slit Experiment",subtitle:"Simulation · electrons · ready to record",
+    canvasAria:"Simulation of the double-slit experiment",
+    recH:"Record a video",play:"Play the sequence (36 s)",
+    recHint:"The controls hide and only the frame stays. Press <kbd>Esc</kbd> to stop.",
+    fmtH:"Format",f11:"Square 1:1",f45:"Portrait 4:5",freeH:"Free mode",
+    pause:"Pause",resume:"Resume",reset:"Clear screen",det:"Detector",on:"ON",off:"OFF",
+    rate:"Electrons per second",sigH:"Signature",sigAria:"Signature shown at the end",sigHint:"Shown on the last frame.",
+    sig:"Simulation · Nabil Lahlalia",howH:"How to record",
+    steps:"<li>Open the page full screen (<kbd>F11</kbd>).</li><li>Start a recorder: <b>Win + Alt + R</b> on Windows, <b>Cmd + Shift + 5</b> on Mac, or OBS.</li><li>Click <b>Play the sequence</b> and wait for the end.</li><li>Crop to the square and trim the start.</li>",
+    credit:"Made by Nabil Lahlalia · "+GH+"source code on GitHub</a>",
+    cv:{head:"DOUBLE-SLIT EXPERIMENT",source:"SOURCE",slits:"2 SLITS",detector:"DETECTOR",screen:"SCREEN",hits:"HITS",
+      observer:"OBSERVER: ",on:"ON",off:"OFF",count:n=>n+" ELECTRONS",notObs:"NOT OBSERVED",obs:"OBSERVED",idle:"One electron. Two slits.",
+      caps:["We fire electrons, one at a time, at two slits.","Each one hits the screen at a single point. Like a marble.","But thousands of hits draw stripes.","Interference. Each electron goes through both slits at once.","Now we add a detector to see which slit it takes.","We watch it… and the stripes disappear.","Just looking changes the result."]}},
+  ar:{dir:'rtl',locale:'ar-MA-u-nu-latn',docTitle:"تجربة الشقّ المزدوج · محاكاة تفاعلية",
+    title:"تجربة الشقّ المزدوج",subtitle:"محاكاة · إلكترونات · جاهزة للتسجيل",
+    canvasAria:"محاكاة تجربة الشقّ المزدوج",
+    recH:"تسجيل فيديو",play:"تشغيل السيناريو (36 ث)",
+    recHint:"تختفي الواجهة ويبقى الإطار فقط. اضغط <kbd>Esc</kbd> للإيقاف.",
+    fmtH:"الصيغة",f11:"مربّع 1:1",f45:"عمودي 4:5",freeH:"الوضع الحرّ",
+    pause:"إيقاف مؤقّت",resume:"استئناف",reset:"مسح الشاشة",det:"الكاشف",on:"مفعّل",off:"متوقّف",
+    rate:"إلكترونات في الثانية",sigH:"التوقيع",sigAria:"التوقيع الظاهر في النهاية",sigHint:"يظهر في اللقطة الأخيرة.",
+    sig:"محاكاة · Nabil Lahlalia",howH:"طريقة التسجيل",
+    steps:"<li>افتح الصفحة بملء الشاشة (<kbd>F11</kbd>).</li><li>شغّل برنامج التسجيل: <b dir='ltr'>Win + Alt + R</b> على ويندوز، <b dir='ltr'>Cmd + Shift + 5</b> على ماك، أو OBS.</li><li>اضغط <b>تشغيل السيناريو</b> وانتظر حتى النهاية.</li><li>اقتصّ الإطار المربّع واحذف البداية.</li>",
+    credit:"تصميم Nabil Lahlalia · "+GH+"الشيفرة المصدرية على GitHub</a>",
+    cv:{head:"تجربة الشقّ المزدوج",source:"المصدر",slits:"شقّان",detector:"الكاشف",screen:"الشاشة",hits:"الاصطدامات",
+      observer:"الرصد: ",on:"مفعّل",off:"متوقّف",count:n=>n+" إلكترون",notObs:"بدون رصد",obs:"مع الرصد",idle:"إلكترون واحد. شقّان.",
+      caps:["نُطلق الإلكترونات، واحدًا تلو الآخر، نحو شقّين.","كلّ إلكترون يصطدم بالشاشة في نقطة واحدة، مثل كرة صغيرة.","لكنّ آلاف الاصطدامات ترسم أشرطة.","إنّه التداخل. كلّ إلكترون يمرّ عبر الشقّين في آنٍ واحد.","الآن نضع كاشفًا لنعرف من أيّ شقّ يمرّ.","نرصده… فتختفي الأشرطة.","مجرّد النظر يغيّر النتيجة."]}}
+};
+let lang='fr', T=I18N.fr;
+const isAR=()=>lang==='ar';
+
 // ---------- canvas + layout ----------
 const cv = document.getElementById('stage');
 const ctx = cv.getContext('2d');
@@ -162,7 +233,10 @@ let W=1080,H=1080,L={};
 const hitsCv = document.createElement('canvas'), hctx = hitsCv.getContext('2d');
 let compareCv = null;
 const C = {ink:'#070a12', line:'#1f2840', text:'#dfe6f5', muted:'#8692ad', wave:'#8fd0ff', watch:'#ffb547'};
-const FD='"Fraunces", Georgia, serif', FM='"IBM Plex Mono", ui-monospace, Menlo, monospace';
+const FD='"Fraunces", Georgia, serif', FM='"IBM Plex Mono", ui-monospace, Menlo, monospace', FA='"IBM Plex Sans Arabic", "Noto Sans Arabic", Tahoma, sans-serif';
+const fDisp=(w,px,it)=>isAR()?`${w} ${px}px ${FA}`:`${it?'italic ':''}${w} ${px}px ${FD}`;
+const fMono=px=>isAR()?`600 ${px}px ${FA}`:`500 ${px}px ${FM}`;
+const startX=x=>isAR()?W-x:x;  // mirror a start-side position for right-to-left text
 
 function sprite(color, r){const c=document.createElement('canvas');c.width=c.height=r*2;const g=c.getContext('2d');const gr=g.createRadialGradient(r,r,0,r,r,r);gr.addColorStop(0,'rgba(255,255,255,0.95)');gr.addColorStop(0.18,color);gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(0,0,r*2,r*2);return c}
 const spr = {wave:sprite('rgba(143,208,255,0.55)',7), watch:sprite('rgba(255,181,71,0.55)',7),
@@ -231,8 +305,9 @@ function step(dt){
 
 // ---------- drawing ----------
 function rgba(hex,a){const n=parseInt(hex.slice(1),16);return `rgba(${n>>16},${n>>8&255},${n&255},${a})`}
-function monoLabel(t,x,y,col,align='left',size=17){ctx.font=`500 ${size}px ${FM}`;ctx.fillStyle=col;ctx.textAlign=align;ctx.textBaseline='alphabetic';
-  if('letterSpacing' in ctx) ctx.letterSpacing='2px'; ctx.fillText(t,x,y); if('letterSpacing' in ctx) ctx.letterSpacing='0px'}
+function setLS(g,v){if('letterSpacing' in g) g.letterSpacing=v}
+function monoLabel(t,x,y,col,align='left',size=17){ctx.font=fMono(isAR()?size+2:size);ctx.fillStyle=col;ctx.textAlign=align;ctx.textBaseline='alphabetic';
+  ctx.direction=isAR()?'rtl':'ltr'; setLS(ctx,isAR()?'0px':'2px'); ctx.fillText(t,x,y); setLS(ctx,'0px'); ctx.direction='ltr'}
 
 function drawApparatus(){
   const {y0,y1,cy,gunX,barX,stripX0,stripX1,histX0,histX1,slitDy,slitGap}=L;
@@ -246,14 +321,14 @@ function drawApparatus(){
   g.addColorStop(0,rgba(detector?C.watch:C.wave,0.45+gunPulse*0.5));g.addColorStop(1,'rgba(0,0,0,0)');
   ctx.fillStyle=g;ctx.beginPath();ctx.arc(gunX+40,cy,40,0,7);ctx.fill();
   ctx.fillStyle=C.text;ctx.beginPath();ctx.arc(gunX+40,cy,4,0,7);ctx.fill();
-  monoLabel('SOURCE',gunX-9,cy+66,C.muted,'center',15);
+  monoLabel(T.cv.source,gunX-9,cy+66,C.muted,'center',15);
   // barrier with two slits
   ctx.fillStyle='#2a3450';
   const bw=14, s1=cy-slitDy, s2=cy+slitDy, h=slitGap/2;
   ctx.fillRect(barX-bw/2,y0,bw,s1-h-y0);
   ctx.fillRect(barX-bw/2,s1+h,bw,s2-h-(s1+h));
   ctx.fillRect(barX-bw/2,s2+h,bw,y1-(s2+h));
-  monoLabel('2 FENTES',barX,y1+38,C.muted,'center',15);
+  monoLabel(T.cv.slits,barX,y1+38,C.muted,'center',15);
   // detectors
   if(detAnim>0.01){
     const pulse = 0.75+0.25*Math.sin(simT*6);
@@ -267,13 +342,13 @@ function drawApparatus(){
       ctx.fillStyle=C.watch;ctx.beginPath();ctx.arc(barX+29,s,4.5,0,7);ctx.fill();
       ctx.globalAlpha=1;
     }
-    ctx.globalAlpha=detAnim;monoLabel('DÉTECTEUR',barX+29,y0-18,C.watch,'center',15);ctx.globalAlpha=1;
+    ctx.globalAlpha=detAnim;monoLabel(T.cv.detector,barX+29,y0-18,C.watch,'center',15);ctx.globalAlpha=1;
   }
   // screen
   ctx.fillStyle='#0b101c';ctx.fillRect(stripX0,y0,stripX1-stripX0,y1-y0);
   ctx.strokeStyle=C.line;ctx.lineWidth=2;ctx.strokeRect(stripX0,y0,stripX1-stripX0,y1-y0);
   ctx.globalAlpha=hitsAlpha;ctx.drawImage(hitsCv,0,0);ctx.globalAlpha=1;
-  monoLabel('ÉCRAN',(stripX0+stripX1)/2,y1+38,C.muted,'center',15);
+  monoLabel(T.cv.screen,(stripX0+stripX1)/2,y1+38,C.muted,'center',15);
   // histogram
   ctx.strokeStyle=rgba(C.muted,0.25);ctx.lineWidth=1;
   ctx.beginPath();ctx.moveTo(histX0,y0);ctx.lineTo(histX0,y1);ctx.stroke();
@@ -282,7 +357,7 @@ function drawApparatus(){
   ctx.fillStyle=rgba(detector?C.watch:C.wave,0.8);
   for(let i=0;i<BINS;i++){const w=Math.min(wmax,bins[i]/shownMax*wmax);if(w>0.5)ctx.fillRect(histX0+2,top+i*bh+0.6,w,bh-1.2)}
   ctx.globalAlpha=1;
-  monoLabel('IMPACTS',(histX0+histX1)/2,y1+38,C.muted,'center',15);
+  monoLabel(T.cv.hits,(histX0+histX1)/2,y1+38,C.muted,'center',15);
 }
 function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
 
@@ -321,37 +396,43 @@ function wrapLines(text,maxW){const words=text.split(' ');const lines=[];let cur
   if(cur)lines.push(cur);return lines}
 function drawCaption(text,alpha,emph){
   if(!text||alpha<=0)return;
-  const fs = H>1100?60:56;
-  ctx.globalAlpha=alpha;ctx.textAlign='left';ctx.textBaseline='alphabetic';
-  ctx.font=`600 ${fs}px ${FD}`;
-  const lines=wrapLines(text,W-L.pad*2);
+  const lh = isAR()?1.32:1.12;
+  let fs = H>1100?60:56, lines;
+  // shrink until the caption clears the apparatus below it
+  for(;;){ctx.font=fDisp(600,fs);lines=wrapLines(text,W-L.pad*2);
+    if(L.capY+fs*0.9+(lines.length-1)*fs*lh <= L.y0-34 || fs<=38) break; fs-=2}
+  ctx.globalAlpha=alpha;ctx.textBaseline='alphabetic';
+  ctx.direction=isAR()?'rtl':'ltr';ctx.textAlign='start';
   let y=L.capY+fs*0.9;
-  for(const ln of lines){ctx.fillStyle=emph?C.watch:C.text;ctx.fillText(ln,L.pad,y);y+=fs*1.12}
-  ctx.globalAlpha=1;
+  for(const ln of lines){ctx.fillStyle=emph?C.watch:C.text;ctx.fillText(ln,startX(L.pad),y);y+=fs*lh}
+  ctx.direction='ltr';ctx.globalAlpha=1;
 }
 function drawHeader(){
-  monoLabel('EXPÉRIENCE DES DEUX FENTES',L.pad,L.capY-34,C.muted,'left',17);
+  monoLabel(T.cv.head,startX(L.pad),L.capY-34,C.muted,isAR()?'right':'left',17);
 }
 function drawFooter(sigAlpha){
-  const y=H-58;
+  const y=H-48;
   const on=detector, col=on?C.watch:C.wave;
-  ctx.font=`500 18px ${FM}`;
-  const label = 'OBSERVATEUR : '+(on?'ON':'OFF');
-  if('letterSpacing' in ctx) ctx.letterSpacing='2px';
-  const tw=ctx.measureText(label).width; if('letterSpacing' in ctx) ctx.letterSpacing='0px';
-  ctx.strokeStyle=rgba(col,0.7);ctx.lineWidth=2;roundRect(L.pad,y-30,tw+58,44,22);ctx.stroke();
-  ctx.fillStyle=col;ctx.beginPath();ctx.arc(L.pad+24,y-8,6,0,7);ctx.fill();
-  monoLabel(label,L.pad+40,y-1,col,'left',18);
-  ctx.font=`500 18px ${FM}`;
-  monoLabel(count.toLocaleString('fr-FR')+' ÉLECTRONS',W-L.pad,y-1,C.muted,'right',18);
+  const ar=isAR();
+  ctx.font=fMono(ar?20:18);
+  const label = T.cv.observer+(on?T.cv.on:T.cv.off);
+  ctx.direction=ar?'rtl':'ltr'; setLS(ctx,ar?'0px':'2px');
+  const tw=ctx.measureText(label).width; setLS(ctx,'0px'); ctx.direction='ltr';
+  const px = ar ? W-L.pad-(tw+58) : L.pad;
+  ctx.strokeStyle=rgba(col,0.7);ctx.lineWidth=2;roundRect(px,y-30,tw+58,44,22);ctx.stroke();
+  ctx.fillStyle=col;ctx.beginPath();ctx.arc(startX(L.pad+24),y-8,6,0,7);ctx.fill();
+  monoLabel(label,startX(L.pad+40),y-1,col,ar?'right':'left',18);
+  monoLabel(T.cv.count(count.toLocaleString(T.locale)),startX(W-L.pad),y-1,C.muted,ar?'left':'right',18);
 }
 
 function buildCompare(){
   compareCv=document.createElement('canvas');compareCv.width=W;compareCv.height=H;
   const g=compareCv.getContext('2d');
   const gap=60, pw=(W-L.pad*2-gap)/2;
-  const panels=[{data:storeWave,col:C.wave,s:spr.wave,label:'SANS OBSERVATION',x:L.pad},
-                {data:storeWatch,col:C.watch,s:spr.watch,label:'AVEC OBSERVATION',x:L.pad+pw+gap}];
+  const ar=isAR();
+  // in Arabic the reading order runs right to left, so "not observed" sits on the right
+  const panels=[{data:storeWave,col:C.wave,s:spr.wave,label:T.cv.notObs,x:ar?L.pad+pw+gap:L.pad},
+                {data:storeWatch,col:C.watch,s:spr.watch,label:T.cv.obs,x:ar?L.pad:L.pad+pw+gap}];
   for(const p of panels){
     const sx0=p.x, sw=pw*0.52, hx0=sx0+sw+14, hx1=p.x+pw;
     g.fillStyle='#0b101c';g.fillRect(sx0,L.y0,sw,L.y1-L.y0);
@@ -364,24 +445,17 @@ function buildCompare(){
     const bh=(L.y1-L.y0)*0.94/BINS, top=L.cy-L.half*0.94, wmax=hx1-hx0-2;
     g.fillStyle=rgba(p.col,0.85);
     for(let i=0;i<BINS;i++){const w=b[i]/m*wmax;if(w>0.5)g.fillRect(hx0,top+i*bh+0.6,w,bh-1.2)}
-    g.font=`500 17px ${FM}`;g.fillStyle=p.col;g.textAlign='left';
-    if('letterSpacing' in g) g.letterSpacing='2px';
-    g.fillText(p.label,sx0,L.y0-20);
-    if('letterSpacing' in g) g.letterSpacing='0px';
+    g.font=fMono(ar?19:17);g.fillStyle=p.col;g.textAlign=ar?'right':'left';g.direction=ar?'rtl':'ltr';
+    setLS(g,ar?'0px':'2px');
+    g.fillText(p.label,ar?hx1:sx0,L.y0-20);
+    setLS(g,'0px');g.direction='ltr';
   }
 }
 
 // ---------- scenario (seconds) ----------
 const SCRIPT_LEN = 36;
-const CAPS = [
-  [0.0, 4.2, "On envoie des électrons, un par un, vers deux fentes."],
-  [4.2, 7.6, "Chacun frappe l'écran en un seul point. Comme une bille."],
-  [7.6, 13.0, "Mais des milliers d'impacts dessinent des bandes."],
-  [13.0, 17.4, "Des interférences. Chaque électron passe par les deux fentes à la fois."],
-  [17.4, 21.2, "Maintenant, on place un détecteur pour savoir par où il passe.", true],
-  [21.2, 29.0, "On l'observe… et les bandes disparaissent.", true],
-  [29.6, 36.5, "Le simple fait de regarder change le résultat."],
-];
+// [start, end, caption index, emphasised]
+const CAPS = [[0.0,4.2,0],[4.2,7.6,1],[7.6,13.0,2],[13.0,17.4,3],[17.4,21.2,4,true],[21.2,29.0,5,true],[29.6,36.5,6]];
 const ramp=(t,a,b,ra,rb)=>{const f=Math.min(1,Math.max(0,(t-a)/(b-a)));return ra*Math.pow(rb/ra,f)};
 let scen=null; // {t, phase flags}
 function scenarioRate(t){
@@ -410,7 +484,7 @@ function scenarioStep(dt){
   if(t>=SCRIPT_LEN) return false;
   return true;
 }
-function capAt(t){for(const [a,b,txt,em] of CAPS){if(t>=a&&t<b){const al=Math.min(a===0?1:(t-a)/0.35,1,(b-t)/0.35);return [txt,Math.max(0,al),em]}}return [null,0]}
+function capAt(t){for(const [a,b,i,em] of CAPS){if(t>=a&&t<b){const al=Math.min(a===0?1:(t-a)/0.35,1,(b-t)/0.35);return [T.cv.caps[i],Math.max(0,al),em]}}return [null,0]}
 
 function render(){
   ctx.globalCompositeOperation='source-over';
@@ -425,10 +499,10 @@ function render(){
   if(cmp>0&&compareCv){ctx.globalAlpha=cmp;ctx.drawImage(compareCv,0,0);
     const sig=document.getElementById('sig').value.trim();
     const sa=Math.min(1,Math.max(0,(scen.t-31)/0.8));
-    if(sig){ctx.globalAlpha=sa;ctx.font=`italic 400 26px ${FD}`;ctx.fillStyle=C.muted;ctx.textAlign='left';ctx.fillText(sig,L.pad,H-52)}
+    if(sig){ctx.globalAlpha=sa;ctx.font=fDisp(400,26,true);ctx.fillStyle=C.muted;ctx.direction=isAR()?'rtl':'ltr';ctx.textAlign='start';ctx.fillText(sig,startX(L.pad),H-52);ctx.direction='ltr'}
     ctx.globalAlpha=1}
   if(scen){const [txt,al,em]=capAt(scen.t);drawCaption(txt,al,em)}
-  else drawCaption("Un électron. Deux fentes.",1,false);
+  else drawCaption(T.cv.idle,1,false);
 }
 
 // ---------- loop & UI ----------
@@ -453,8 +527,8 @@ scenarioStep=function(dt){ if(holdFinal) return true; return _scenarioStep(dt) }
 const $=id=>document.getElementById(id);
 function rateFromSlider(v){return Math.round(Math.pow(10,v/100*3))} // 1..1000
 function syncUI(){
-  $('btnDet').setAttribute('aria-pressed',detector);$('btnDet').textContent='Détecteur : '+(detector?'ON':'OFF');
-  $('btnRun').textContent=running?'Pause':'Reprendre';
+  $('btnDet').setAttribute('aria-pressed',detector);$('btnDet').textContent=T.det+' : '+(detector?T.on:T.off);
+  $('btnRun').textContent=running?T.pause:T.resume;
 }
 function leaveScenario(){ if(scen){scen=null;holdFinal=false;detector=false;resetScreen();rate=rateFromSlider(+$('rate').value);syncUI()} }
 $('rate').addEventListener('input',e=>{leaveScenario();rate=rateFromSlider(+e.target.value);$('rateOut').textContent=rate});
@@ -477,15 +551,41 @@ document.addEventListener('fullscreenchange',()=>{});
 
 // ---------- offline render hook (used to export the MP4) ----------
 window.__render={
-  setup(fmt){layout(fmt);startScenario();holdFinal=false;running=false},
+  setup(fmt,l){if(l)setLang(l,false);layout(fmt);startScenario();holdFinal=false;running=false},
   advance(dt,steps){for(let i=0;i<steps;i++)_scenarioStep(dt);render()},
   length:SCRIPT_LEN
 };
 
+function setLang(l, remember){
+  if(!I18N[l]) l='fr';
+  const prevSig=T.sig; lang=l; T=I18N[l];
+  const root=document.documentElement; root.lang=l; root.dir=T.dir; document.title=T.docTitle;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=T[el.dataset.i18n]});
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{el.innerHTML=T[el.dataset.i18nHtml]});
+  document.querySelectorAll('[data-i18n-aria]').forEach(el=>{el.setAttribute('aria-label',T[el.dataset.i18nAria])});
+  document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===l));
+  const sig=$('sig'); if(!sig.value.trim()||Object.values(I18N).some(x=>x.sig===sig.value)||sig.value===prevSig) sig.value=T.sig;
+  syncUI();
+  if(compareCv) buildCompare();
+  if(l==='ar') document.fonts.load(`600 56px ${FA}`).then(()=>{if(compareCv)buildCompare()},()=>{});
+  if(remember){
+    try{localStorage.setItem('dse-lang',l)}catch(e){}
+    try{const u=new URL(location.href);u.searchParams.set('lang',l);history.replaceState(null,'',u)}catch(e){}
+  }
+}
+document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang,true)));
+function initialLang(){
+  try{const q=new URLSearchParams(location.search).get('lang');if(q&&I18N[q])return q}catch(e){}
+  try{const s=localStorage.getItem('dse-lang');if(s&&I18N[s])return s}catch(e){}
+  const n=(navigator.languages&&navigator.languages[0]||navigator.language||'fr').slice(0,2).toLowerCase();
+  return I18N[n]?n:(n==='fr'?'fr':'en');
+}
+
 layout('11');
+setLang(initialLang(),false);
 rate=rateFromSlider(+$('rate').value);$('rateOut').textContent=rate;
 const go=()=>{if(!window.__noLoop) raf=requestAnimationFrame(frame)};
-Promise.all([document.fonts.load(`600 56px ${FD}`),document.fonts.load(`italic 400 26px ${FD}`),document.fonts.load(`500 17px ${FM}`)]).then(go,go);
+Promise.all([document.fonts.load(`600 56px ${FD}`),document.fonts.load(`italic 400 26px ${FD}`),document.fonts.load(`500 17px ${FM}`),document.fonts.load(`600 56px ${FA}`,'ب')]).then(go,go);
 })();
 </script>
 </body>

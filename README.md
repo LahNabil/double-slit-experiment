@@ -4,7 +4,9 @@
 
 **Une simulation interactive de l'expérience des fentes de Young, électron par électron.**
 
-[**▶ Essayer la démo**](https://lahnabil.github.io/double-slit-experiment/) · [Comment ça marche](#comment-ça-marche) · [English](#english)
+**Français** · [English](README.en.md) · [العربية](README.ar.md)
+
+[**▶ Essayer la démo**](https://lahnabil.github.io/double-slit-experiment/?lang=fr) · [Comment ça marche](#comment-ça-marche)
 
 <img src="assets/preview.gif" alt="Les électrons dessinent des bandes d'interférence, puis deux simples taches quand le détecteur est activé" width="480">
 
@@ -27,6 +29,7 @@ Rien n'a changé dans l'expérience, sauf une chose : on a regardé.
 
 - **Mode libre** : réglez le débit (de 1 à 1 000 électrons par seconde), activez ou coupez le détecteur, effacez l'écran.
 - **Scénario de 36 s** : une séquence commentée, sans interface, pensée pour être enregistrée et partagée (formats carré 1:1 et portrait 4:5).
+- **Trois langues** : français, anglais et arabe (avec mise en page de droite à gauche), y compris les textes de la simulation. La langue suit celle du navigateur, ou se choisit avec `?lang=fr`, `?lang=en` ou `?lang=ar`.
 - **Zéro dépendance** : un seul fichier HTML, Canvas 2D, JavaScript natif. Aucun build.
 
 ## Comment ça marche
@@ -66,7 +69,10 @@ python -m http.server 8000
 
 ```
 .
-├── index.html               # la simulation complète (HTML + CSS + JS)
+├── index.html               # la simulation complète (HTML + CSS + JS, 3 langues)
+├── README.md                # documentation en français
+├── README.en.md             # documentation en anglais
+├── README.ar.md             # documentation en arabe
 ├── assets/
 │   ├── preview.gif          # aperçu du README
 │   └── og-image.png         # image de partage (LinkedIn, X…)
@@ -86,12 +92,3 @@ Je ne suis pas physicien : ce projet est né d'une curiosité. Si vous repérez 
 
 Licence [MIT](LICENSE).
 
----
-
-## English
-
-**An interactive, electron-by-electron simulation of the double-slit experiment.** Electrons are fired one at a time; each lands at a single point, yet thousands of hits build an interference pattern. Turn on the which-path detector and the pattern collapses into two plain bands.
-
-Each landing position is sampled from the theoretical probability distribution (two-slit Fraunhofer pattern without detection, incoherent sum of two single-slit humps with detection) using inverse-CDF sampling and a seeded RNG. Single HTML file, no dependencies. Includes a 36-second scripted sequence designed for screen recording.
-
-[**▶ Live demo**](https://lahnabil.github.io/double-slit-experiment/) · MIT licensed.
